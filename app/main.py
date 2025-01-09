@@ -82,3 +82,7 @@ class ResponseTodoList(BaseModel):
 def get_echo(message: str, name: str):
     return {"Message": f"{message} {name}!"}
 
+#API の HTTP メソッド GET でパスを /health パラメータを持たないエンドポイントを作成
+@app.get("/health", tags=["System"])
+def get_health():
+    return{"status": "ok"}

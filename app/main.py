@@ -1,13 +1,16 @@
 import os
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from app.const import TodoItemStatusCode
 
 from .models.item_model import ItemModel
 from .models.list_model import ListModel
+from .dependencies import get_db
+
 
 DEBUG = os.environ.get("DEBUG", "") == "true"
 
@@ -86,3 +89,34 @@ def get_echo(message: str, name: str):
 @app.get("/health", tags=["System"])
 def get_health():
     return{"status": "ok"}
+
+@app.get("/lists/{todo_list_id}", response_model=ResponseTodoList, tags=["Todo List"])
+def get_todo_list(
+    todo_list_id: int,
+    session: Session = Depends(get_db),
+):
+    #DBから該当レコードを1件取得
+    db_item =session.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo List not found"
+        )
+    # レコードを返却　→　Pydantic(ResponseTodoList)に変換される
+    return db_item
+
+    # 新規TODOリストを登録するエンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+@app.post("/lists", response_model=ResponseTodoList, tags=["Todo List"] )
+def post_todo_list(
+    data:NewTodoList,
+    session: Session = Depends(get_db),
+):
+    new_db_item = ListModel(
+        title=data.title,
+        description=data.description,
+    )
+    session.add(new_db_item)
+    session.commit()
+    session.refresh(new_db_item)
+    return new_db_item

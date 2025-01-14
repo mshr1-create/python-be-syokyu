@@ -105,7 +105,7 @@ def get_todo_list(
     # レコードを返却　→　Pydantic(ResponseTodoList)に変換される
     return db_item
 
-    # 新規TODOリストを登録するエンドポイント
+# 新規TODOリストを登録するエンドポイント
 # DBセッション注入、response_modelで登録結果を返す
 @app.post("/lists", response_model=ResponseTodoList, tags=["Todo List"] )
 def post_todo_list(
@@ -120,3 +120,47 @@ def post_todo_list(
     session.commit()
     session.refresh(new_db_item)
     return new_db_item
+
+
+# TODOリストを更新するエンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+@app.put("/lists/{todo_list_id}", response_model=ResponseTodoList, tags=["Todo List"])
+def put_todo_list(
+    todo_list_id: int,
+    data: UpdateTodoList,
+    session: Session = Depends(get_db),
+):
+    db_item = session.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo List not found"
+        )
+    if data.title is not None:
+        db_item.title = data.title
+    if data.description is not None:
+        db_item.description = data.description
+       
+    session.commit()
+    session.refresh(db_item)
+    return db_item
+
+# TODOリストを削除するエンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+# API のレスポンス形式 空の Json を返却
+@app.delete("/lists/{todo_list_id}", response_model=None, tags=["Todo List"])
+def delete_todo_list(
+    todo_list_id: int,
+    session: Session = Depends(get_db),
+):
+    db_item = session.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            dertail="Todo List not found"
+        )
+    
+    session.delete(db_item)
+    session.commit()
+    return {}
+   

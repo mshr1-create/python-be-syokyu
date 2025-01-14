@@ -163,4 +163,8 @@ def delete_todo_list(
     session.delete(db_item)
     session.commit()
     return {}
+
+# TODOリストに紐づくTODOアイテムを取得するエンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+@app.get("/lists/{todo_list_id}/items", response_model=list[ResponseTodoItem], tags=["Todo Item"])
    

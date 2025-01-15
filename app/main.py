@@ -166,5 +166,17 @@ def delete_todo_list(
 
 # TODOリストに紐づくTODOアイテムを取得するエンドポイント
 # DBセッション注入、response_modelで登録結果を返す
-@app.get("/lists/{todo_list_id}/items", response_model=list[ResponseTodoItem], tags=["Todo Item"])
-   
+# APIのパス/lists/{todo_list_id}/items/{todo_item_id}
+@app.get("/lists/{todo_list_id}/items/{todo_item_id}", response_model=ResponseTodoItem, tags=["Todo Item"])
+def get_todo_item(
+    todo_list_id: int,
+    todo_item_id: int,
+    session: Session = Depends(get_db),
+):
+    db_item = session.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id,ItemModel.id == todo_item_id ).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo Item not found"
+        )
+    return db_item

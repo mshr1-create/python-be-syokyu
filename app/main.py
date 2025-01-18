@@ -180,3 +180,60 @@ def get_todo_item(
             detail="Todo Item not found"
         )
     return db_item
+
+# TODO 項目作成エンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+# APIのパス/lists/{todo_list_id}/items
+# パスパラメータでtodo_list_idを受け取る。
+# リクエストボディでNewTodoItem型のパラメータを受け取る。
+@app.post("/lists/{todo_list_id}/items", response_model=ResponseTodoItem, tags=["Todo Item"])
+def post_todo_item(
+    todo_list_id: int,
+    data:NewTodoItem,
+    session: Session = Depends(get_db),
+):
+    new_db_item = ItemModel(
+        todo_list_id=todo_list_id,
+        title=data.title,
+        description=data.description,
+        due_at=data.due_at,
+        status_code=TodoItemStatusCode.NOT_COMPLETED.value 
+    )
+    session.add(new_db_item)
+    session.commit()
+    session.refresh(new_db_item)
+    return new_db_item
+
+# TODO項目更新エンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+# APIのパス/lists/{todo_list_id}/items/{todo_item_id}
+# パスパラメータでtodo_list_idとtodo_item_idを受け取る。
+# リクエストボディでUpdateTodoItem型のパラメータを受け取る。
+@app.put("/lists/{todo_list_id}/items/{todo_item_id}", response_model=ResponseTodoItem, tags=["Todo Item"])
+def put_todo_item(
+    todo_list_id: int,
+    todo_item_id: int,
+    data: UpdateTodoItem,
+    session: Session = Depends(get_db),
+):
+    db_item = session.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id, ItemModel.id == todo_item_id).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo Item not found"
+        )
+    if data.title is not None:
+        db_item.title = data.title
+    if data.description is not None:
+        db_item.description = data.description
+    if data.due_at is not None:
+        db_item.due_at = data.due_at
+    if data.complete is not None:
+        db_item.status_code = TodoItemStatusCode.COMPLETED.value if data.complete else TodoItemStatusCode.NOT_COMPLETED.value
+    
+    session.commit()
+    session.refresh(db_item)
+    return db_item
+
+    
+

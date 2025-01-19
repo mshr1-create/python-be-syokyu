@@ -235,5 +235,25 @@ def put_todo_item(
     session.refresh(db_item)
     return db_item
 
+# TODO項目削除エンドポイント
+# DBセッション注入、response_modelで登録結果を返す
+# APIのパス/lists/{todo_list_id}/items/{todo_item_id}
+# パスパラメータでtodo_list_idとtodo_item_idを受け取る。
+# API のレスポンス形式 空の Json を返却 {}
+@app.delete("/lists/{todo_list_id}/items/{todo_item_id}", response_model=None, tags=["Todo Item"])
+def delete_todo_item(
+    todo_list_id: int,
+    todo_item_id:int,
+    session: Session = Depends(get_db),
+):
+    db_item = session.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id, ItemModel.id == todo_item_id).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo Item not found"
+        ) 
     
+    session.delete(db_item)
+    session.commit()
+    return {}
 

@@ -41,10 +41,10 @@ async def put_todo_item(
     data: UpdateTodoItem,
     session: Session = Depends(get_db),
 ):
-    return item_crud.put_todo_item(todo_list_id, todo_item_id, data, session)
+    return item_crud.update_todo_item(todo_list_id, todo_item_id, data, session)
 
 @router.delete("/{todo_item_id}")
-async def delete_todo_item(
+def delete_todo_item(
     todo_list_id: int,
     todo_item_id: int,
     session: Session = Depends(get_db),

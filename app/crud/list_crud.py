@@ -65,7 +65,7 @@ def update_todo_list(
     return db_item
 
 # TODOリストを削除するエンドポイント
-async def delete_todo_list(
+def delete_todo_list(
     todo_list_id: int,
     db: Session
 ):

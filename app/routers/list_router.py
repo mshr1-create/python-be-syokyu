@@ -28,7 +28,7 @@ async def post_todo_list(
     data: NewTodoList,
     session: Session = Depends(get_db),
 ):
-    return list_crud.post_todo_list(data, session)
+    return list_crud.create_todo_list(data, session)
 
 @router.put("/{todo_list_id}", response_model=ResponseTodoList)
 def put_todo_list(
@@ -36,10 +36,10 @@ def put_todo_list(
     data: UpdateTodoList,
     session: Session = Depends(get_db),
 ):
-    return list_crud.put_todo_list(todo_list_id, data, session)
+    return list_crud.update_todo_list(todo_list_id, data, session)
 
 @router.delete("/{todo_list_id}")
-async def delete_todo_list(
+def delete_todo_list(
     todo_list_id: int,
     session: Session = Depends(get_db),
 ):

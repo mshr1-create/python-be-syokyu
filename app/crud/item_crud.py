@@ -16,6 +16,11 @@ def get_todo_items(
     todo_list_id: int
 ):
     db_items = db.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id).all()
+    if db_items is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo Item not found"
+        )
     return db_items
 
 def get_todo_item(
@@ -37,6 +42,12 @@ def post_todo_item(
     todo_list_id: int,
     data:NewTodoItem
 ):
+    db_item = db.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id).first()
+    if db_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo Item not found"
+        )
     new_db_item = ItemModel(
         todo_list_id=todo_list_id,
         title=data.title,

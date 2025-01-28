@@ -14,9 +14,11 @@ router = APIRouter(
 
 def get_todo_items(
     todo_list_id: int,
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    page: int = 1,
+    per_page: int = 10,
 ):
-    return item_crud.get_todo_items(session, todo_list_id)
+    return item_crud.get_todo_items(session, todo_list_id, page, per_page)
 
 @router.get("/{todo_item_id}")
 def get_todo_item(

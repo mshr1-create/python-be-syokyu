@@ -13,9 +13,17 @@ from sqlalchemy.orm import Session
 # TODOリストに紐づくTODOアイテムを取得するエンドポイント
 def get_todo_items(
     db: Session, 
-    todo_list_id: int
+    todo_list_id: int,
+    page: int = 1,
+    per_page: int = 10
 ):
-    db_items = db.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id).all()
+    offset = (page - 1) * per_page
+    db_items = db.query(ItemModel)\
+                 .filter(ItemModel.todo_list_id == todo_list_id)\
+                 .order_by(ItemModel.id)\
+                 .limit(per_page)\
+                 .offset(offset)\
+                 .all()
     if db_items is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -42,8 +50,8 @@ def post_todo_item(
     todo_list_id: int,
     data:NewTodoItem
 ):
-    db_item = db.query(ItemModel).filter(ItemModel.todo_list_id == todo_list_id).first()
-    if db_item is None:
+    parent_list = db.query(ListModel).filter(ListModel.id == todo_list_id).first()
+    if parent_list is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Todo Item not found"

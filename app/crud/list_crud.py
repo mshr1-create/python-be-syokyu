@@ -8,10 +8,18 @@ from app.schemas.list_schema import NewTodoList, UpdateTodoList
 
 from sqlalchemy.orm import Session
 
+# TODO リスト一覧取得用関数にて、pageおよびper_pageを引数として受け取るようにして、これら2つの引数を基にデータを返却するように処理の記述
 def get_todo_lists(
-    db: Session
+    db: Session,
+    page: int,
+    per_page: int
 ):
-    db_lists = db.query(ListModel).all()
+    offset = (page - 1) * per_page
+    db_lists = db.query(ListModel)\
+                 .order_by(ListModel.id)\
+                 .limit(per_page)\
+                 .offset(offset)\
+                 .all()
     return db_lists
 
 # TODOリストを取得するエンドポイント

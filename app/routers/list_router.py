@@ -10,11 +10,15 @@ router = APIRouter(
     tags=["Todo List"],
 )
 
+# GET /listsのエンドポイントを実装しているパスオペレーション関数に、pageとper_pageのクエリ文字列を追加する
+
 @router.get("/")
 def get_todo_lists(
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    page: int = 1,
+    per_page: int = 10,
 ):
-    return list_crud.get_todo_lists(session)
+    return list_crud.get_todo_lists(session, page, per_page)
 
 @router.get("/{todo_list_id}", response_model=ResponseTodoList)
 async def get_todo_list(
